@@ -832,3 +832,66 @@ class Bugz:
 			pass
 
 		return False
+
+	def update(self, attachid, comment = None, obsolete = None, patch = None):
+		"""Modify attributes of an existing attachment
+
+		@param attachid: attachment id
+		@type  attachid: int
+		@keyword comment: comment to add
+		@type    comment: string
+		@keyword obsolete: is this attachment obsolete?
+		@type    obsolete: string
+		@keyword patch: is this attachment a patch?
+		@type    patch: string
+
+		@return: list of fields modified.
+		@rtype: list of strings
+		"""
+		if not self.authenticated and not self.skip_auth:
+			self.auth()
+
+		result = Bugz.attachment(self, attachid)
+		if not result:
+			raise RuntimeError('Attachment %s could not be found' % attachid)
+
+		modified = []
+		qparams = config.params['attach_update'].copy()
+		qparams['id'] = attachid
+
+		if comment:
+			qparams['comment'] = comment
+			modified.append(('comment', ellipsis(comment, 60)))
+
+		if obsolete:
+			if obsolete[0] in ['y', 'Y']:
+				qparams['isobsolete'] = '1'
+			else:
+				qparams['isobsolete'] = '0'
+		modified.append(('isobsolete', obsolete))
+
+		if patch:
+			if patch[0] in ['y', 'Y']:
+				qparams['ispatch'] = '1'
+			else:
+				qparams['ispatch'] = '0'
+			modified.append(('ispatch', patch))
+
+		req_params = urlencode(qparams, True)
+		req_url = urljoin(self.base, config.urls['attach_update'])
+		req = Request(req_url, req_params, config.headers)
+		if self.httpuser and self.httppassword:
+			base64string = base64.encodestring('%s:%s' % (self.httpuser, self.httppassword))[:-1]
+			req.add_header("Authorization", "Basic %s" % base64string)
+
+		print req
+		try:
+			resp = self.opener.open(req)
+			re_error = re.compile(r'id="error_msg".*>([^<]+)<')
+			error = re_error.search(resp.read())
+			if error:
+				print error.group(1)
+				return []
+			return modified
+		except:
+			return []

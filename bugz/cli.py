@@ -561,6 +561,37 @@ class PrettyBugz(Bugz):
 		result = Bugz.attach(self, bugid, filename, description, filename,
 				content_type, patch)
 
+	def update(self, attachid, **kwds):
+		"""Update an existing attachment (e.g. mark it as a patch or
+		obsolete.)"""
+		if 'comment_from' in kwds:
+			if kwds['comment_from']:
+				try:
+					kwds['comment']  = open(kwds['comment_from'], 'r').read()
+				except IOError, e:
+					raise BugzError('Failed to get read from file: %s: %s' % \
+									(comment_from, e))
+
+				if 'comment_editor' in kwds:
+					if kwds['comment_editor']:
+						kwds['comment'] = block_edit('Enter comment:', kwds['comment'])
+						del kwds['comment_editor']
+
+			del kwds['comment_from']
+
+		if 'comment_editor' in kwds:
+			if kwds['comment_editor']:
+				kwds['comment'] = block_edit('Enter comment:')
+			del kwds['comment_editor']
+
+		result = Bugz.update(self, attachid, **kwds)
+		if not result:
+			raise RuntimeError('Failed to modify attachment')
+		else:
+			self.log('updated attachment %s with the following fields:' % attachid)
+			for field, value in result:
+				self.log('  %-12s: %s' % (field, value))
+
 	def listbugs(self, buglist, show_url=False, show_status=False):
 		for row in buglist:
 			bugid = row['bugid']
@@ -583,3 +614,4 @@ class PrettyBugz(Bugz):
 				print line[:self.columns]
 
 		self.log("%i bug(s) found." % len(buglist))
+

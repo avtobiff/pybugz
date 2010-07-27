@@ -53,7 +53,7 @@ def make_get_parser(subparsers):
 
 def make_modify_parser(subparsers):
 	modify_parser = subparsers.add_parser('modify',
-		help = 'modify a bug (eg. post a comment)')
+		help = 'modify a bug (e.g. post a comment)')
 	modify_parser.add_argument('bugid',
 		help = 'the ID of the bug to modify')
 	modify_parser.add_argument('-a', '--assigned-to',
@@ -79,7 +79,7 @@ def make_modify_parser(subparsers):
 		help = 'set new resolution (only if status = RESOLVED)')
 	modify_parser.add_argument('-s', '--status',
 		choices=config.choices['status'].values(),
-		help = 'set new status of bug (eg. RESOLVED)')
+		help = 'set new status of bug (e.g. RESOLVED)')
 	modify_parser.add_argument('-S', '--severity',
 		choices=config.choices['severity'],
 		help = 'set severity for this bug')
@@ -224,6 +224,26 @@ def make_search_parser(subparsers):
 		help='show bug id as a url.')
 	search_parser.set_defaults(func = PrettyBugz.search)
 
+def make_update_parser(subparsers):
+	update_parser = subparsers.add_parser('update',
+		help = 'update an attachment (e.g. mark it obsolete or as a patch)')
+	update_parser.add_argument('attachid',
+		help = 'the ID of the attachment to modify')
+	update_parser.add_argument('-C', '--comment-editor',
+		action='store_true',
+		help = 'add comment via default editor')
+	update_parser.add_argument('-F', '--comment-from',
+		help = 'add comment from file.  If -C is also specified, the editor will be opened with this file as its contents.')
+	update_parser.add_argument('-c', '--comment',
+		help = 'add comment from command line')
+	update_parser.add_argument('-o', '--obsolete',
+		choices = ['y', 'Y', 'n', 'N'],
+		help = 'is this attachment obsolete (y/n)?')
+	update_parser.add_argument('-p', '--patch',
+		choices = ['y', 'Y', 'n', 'N'],
+		help = 'is this attachment a patch (y/n)?')
+	update_parser.set_defaults(func = PrettyBugz.update)
+
 def make_parser():
 	parser = argparse.ArgumentParser(
 		epilog = 'use -h after a sub-command for sub-command specific help')
@@ -267,6 +287,7 @@ def make_parser():
 	make_namedcmd_parser(subparsers)
 	make_post_parser(subparsers)
 	make_search_parser(subparsers)
+	make_update_parser(subparsers)
 	return parser
 
 def get_kwds(args):

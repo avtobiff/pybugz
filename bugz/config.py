@@ -15,6 +15,7 @@ class BugzConfig:
 		'post': 'post_bug.cgi',
 		'modify': 'process_bug.cgi',
 		'attach_post': 'attachment.cgi',
+		'attach_update': 'attachment.cgi',
 	}
 
 	headers = {
@@ -57,6 +58,17 @@ class BugzConfig:
 		'ispatch': '',
 		'contenttypemethod': 'manual',
 		'bugid': '',
+		'description': '',
+		'contenttypeentry': 'text/plain',
+		'comment': '',
+		},
+
+		'attach_update': {
+		'action': 'update',
+		'id': '',
+		'isobsolete': '',
+		'ispatch': '',
+		'contenttypemethod': 'manual',
 		'description': '',
 		'contenttypeentry': 'text/plain',
 		'comment': '',
